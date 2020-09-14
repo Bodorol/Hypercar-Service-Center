@@ -29,12 +29,15 @@ class TicketView(View):
             TicketView.line_of_cars[TicketView.queue.popleft()] += 1
         if "change_oil" in request.path:
             TicketView.queue.append("oil")
+            ProcessingView.tickets["oil"] += 1
             wait += TicketView.line_of_cars["oil"] * 2
         elif "inflate_tires" in request.path:
             TicketView.queue.append("tires")
+            ProcessingView.tickets["tires"] += 1
             wait += TicketView.line_of_cars["oil"] * 2 + TicketView.line_of_cars["tires"] * 5
         elif "diagnostic" in request.path:
             TicketView.queue.append("diagnostic")
+            ProcessingView.tickets["diagnostic"] += 1
             wait += TicketView.line_of_cars["oil"] * 2 + TicketView.line_of_cars["tires"] * 5 + TicketView.line_of_cars[
                 "diagnostic"] * 30
         else:
@@ -42,3 +45,10 @@ class TicketView(View):
         TicketView.ticket_num += 1
         context = {"ticket": TicketView.ticket_num, "wait": wait}
         return render(request, "tickets/ticket.html", context)
+
+
+class ProcessingView(View):
+    tickets= {"oil": 0, "tires": 0, "diagnostic": 0}
+
+    def get(self, request, *args, **kwargs):
+        return render(request, "tickets/processing.html", ProcessingView.tickets)
